@@ -33,7 +33,7 @@ def latlong2table(lats_and_longs):
     out = []
     latlong_bag = bag.bag(lats_and_longs)
     for (lat, long), count in latlong_bag.mostcommon():
-        this_row = {'point': '%s,%s' % (lat, long)}
+        this_row = dict(lat='%.0f' % lat, lon='%.0f' % long)
         # FIXME: this_row should do image scaling based on the frequency
         # of occurrence as seen in "count"
         out.append(this_row)
