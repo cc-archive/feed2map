@@ -1,5 +1,24 @@
 from cPickle import dumps, PicklingError # for memoize
+import cPickle as pickle
+import os
 
+# Slightly evil, but there you go:
+# module-level cache.
+CACHE_FILENAME = './memoize-cache'
+
+def save_cache(obj):
+    fd = open(CACHE_FILENAME, 'wb')
+    pickle.dump(obj, fd)
+    fd.close()
+
+def read_from_cache():
+    return pickle.load(open(CACHE_FILENAME))
+
+try:
+    _cache = read_from_cache()
+except:
+    save_cache({})
+    _cache = read_from_cache()
 
 class memoize(object):
     """Decorator that caches a function's return value each time it is called.
@@ -14,7 +33,6 @@ class memoize(object):
     #   but the keys of such dict can't be int
     def __init__(self, func):
         self.func = func
-        self._cache = {}
     def __call__(self, *args, **kwds):
         key = args
         if kwds:
@@ -22,9 +40,10 @@ class memoize(object):
             items.sort()
             key = key + tuple(items)
         try:
-            if key in self._cache:
-                return self._cache[key]
-            self._cache[key] = result = self.func(*args, **kwds)
+            if key in _cache:
+                return _cache[key]
+            _cache[key] = result = self.func(*args, **kwds)
+            save_cache(_cache)
             return result
         except TypeError:
             try:
@@ -32,9 +51,10 @@ class memoize(object):
             except PicklingError:
                 return self.func(*args, **kwds)
             else:
-                if dump in self._cache:
-                    return self._cache[dump]
-                self._cache[dump] = result = self.func(*args, **kwds)
+                if dump in _cache:
+                    return _cache[dump]
+                _cache[dump] = result = self.func(*args, **kwds)
+                save_cache(_cache)
                 return result
 
 
