@@ -6,6 +6,12 @@ import bag
 import sys
 import memoize
 
+def scale_image(dimensions, number):
+    # What scaling strategy to use?
+    # For now, just multiply by number * 0.5 since the numbers are so small.
+    # This way, 1 -> 1/2 size, 2 -> full size, 3 -> 1.5 size, etc.
+    return [int(dim * number * 0.5) for dim in dimensions]
+
 @memoize.memoize
 def location2latlong(s):
     args = {'appid': 'cc-location-feed', 'location': s}
@@ -25,17 +31,27 @@ def feed2latlong(feed_contents):
 
     for li in soup('li'):
         date_time, amount, location = li.string.split(',', 2)
-        ret.append(location2latlong(location))
+        if location.replace(',', '').replace(' ', ''):
+            ret.append(location2latlong(location))
+        #else:
+        #    print >> sys.stderr, li, 'was useless'
 
     return ret
+
+# Don't need this for now; using full precision.
+def truncate_float(precision, float):
+    scale = int(1/precision)
+    return int(float * scale) * 1.0 / scale
 
 def latlong2table(lats_and_longs):
     out = []
     latlong_bag = bag.bag(lats_and_longs)
+    base_iconsize = (21, 25)
     for (lat, long), count in latlong_bag.mostcommon():
-        this_row = dict(lat='%.0f' % lat, lon='%.0f' % long)
-        # FIXME: this_row should do image scaling based on the frequency
-        # of occurrence as seen in "count"
+        my_iconsize = map(str, scale_image(base_iconsize, count))
+        this_row = dict(lat='%f' % lat,
+                        lon='%f' % long,
+                        iconSize = ','.join(my_iconsize))
         out.append(this_row)
     return out
 
