@@ -3,3 +3,10 @@ Citing our sources:
 bag.py came from http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/259174/index_txt
 
 memoize.py came from http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/466320/index_txt
+
+How to use:
+
+1. Set up a cron job that gets the feed into the file 'input'
+1a. (Alternately, wget it once during testing.)
+2. Run ./feed2map.py > /path/where/you/want/the/table/stored.txt
+
