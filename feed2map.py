@@ -15,8 +15,8 @@ def curl_get(url):
 
     c_a = Curl_appendee()
     curling = pycurl.Curl()
-    curling.setopt(c.URL, url)
-    curling.setopt(c.WRITEFUNCTION, c_a.body_callback)
+    curling.setopt(curling.URL, url)
+    curling.setopt(curling.WRITEFUNCTION, c_a.body_callback)
     curling.perform()
     curling.close()
 
@@ -71,7 +71,7 @@ def latlong2table(lats_and_longs):
         my_icon_width  = int( (140.0 / 50) * my_icon_height )
         this_row = dict(lat='%f' % lat,
                         lon='%f' % long,
-                        icon = 'http://labs.creativecommons.org/~paulproteus/pin_green_h=%d.png' % my_icon_height,
+                        icon = 'http://tilecache.creativecommons.org/icons/pin_green_h=%d.png' % my_icon_height,
                         iconSize='%d,%d' % (my_icon_width, my_icon_height))
         out.append(this_row)
     return out
