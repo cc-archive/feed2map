@@ -6,6 +6,23 @@ import bag
 import sys
 import memoize
 
+def curl_get(url):
+    class Curl_appendee:
+        def __init__(self):
+            self.contents = ''
+        def body_callback(self, buf):
+            self.contents += buf
+
+    c_a = Curl_appendee()
+    curling = pycurl.Curl()
+    curling.setopt(c.URL, url)
+    curling.setopt(c.WRITEFUNCTION, c_a.body_callback)
+    curling.perform()
+    curling.close()
+
+    return c_a.contents
+        
+
 def scale_image(dimensions, number):
     # What scaling strategy to use?
     # For now, just multiply by number * 0.5 since the numbers are so small.
