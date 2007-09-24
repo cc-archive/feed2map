@@ -46,12 +46,16 @@ def truncate_float(precision, float):
 def latlong2table(lats_and_longs):
     out = []
     latlong_bag = bag.bag(lats_and_longs)
-    base_iconsize = (21, 25)
+    max_icon_height = 50
+    
     for (lat, long), count in latlong_bag.mostcommon():
-        my_iconsize = map(str, scale_image(base_iconsize, count))
+        count += 1 # lol
+        my_icon_height = int(  min( (10 * count), 50)      )
+        my_icon_width  = int( (140.0 / 50) * my_icon_height )
         this_row = dict(lat='%f' % lat,
                         lon='%f' % long,
-                        iconSize = ','.join(my_iconsize))
+                        icon = 'http://labs.creativecommons.org/~paulproteus/pin_green_h=%d.png' % my_icon_height,
+                        iconSize='%d,%d' % (my_icon_width, my_icon_height))
         out.append(this_row)
     return out
 
