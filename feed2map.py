@@ -42,12 +42,19 @@ def location2latlong(s):
     long = float(soup('longitude')[0].string)
     return (lat, long)
 
-def feed2latlong(feed_contents):
+def feed2dicts(feed_contents):
     soup = BeautifulSoup.BeautifulSoup(feed_contents)
     ret = []
 
     for li in soup('li'):
         date_time, amount, location = li.string.split(',', 2)
+        ret.append(dict(date_time=date_time, amount=amount, location=location))
+    return ret
+
+def dicts2latlong(d):
+    ret = []
+    for row in d:
+        location = row['location']
         if location.replace(',', '').replace(' ', ''):
             ret.append(location2latlong(location))
         #else:
@@ -105,7 +112,7 @@ def main():
         print >> sys.stderr, "You might want to set up a cron job to update that file every few whatevers."
         sys.exit(1)
 
-    print format_table(latlong2table(feed2latlong(feed_contents)))
+    print format_table(latlong2table(dicts2latlong(feed2dicts(feed_contents))))
 
 if __name__ == '__main__':
     main()
