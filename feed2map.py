@@ -31,6 +31,14 @@ def scale_image(dimensions, number):
 
 @memoize.memoize
 def location2latlong(s):
+    try:
+        return location2latlong_real(s)
+    except:
+        # uh, who knows?  Throw away the state.
+        city, state, country = s.split(',')
+        return location2latlong_real(','.join([city, country]))
+
+def location2latlong_real(s):
     args = {'appid': 'cc-location-feed', 'location': s}
     reslut = curl_get('http://local.yahooapis.com/MapsService/V1/geocode?' + 
                       urllib.urlencode(args))
