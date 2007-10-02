@@ -55,8 +55,12 @@ def dicts2latlong(d):
     ret = []
     for row in d:
         location = row['location']
-        if location.replace(',', '').replace(' ', ''):
-            ret.append(location2latlong(location))
+        try:
+            if location.replace(',', '').replace(' ', ''):
+                ret.append(location2latlong(location))
+        except:
+            print "That's weird, I can't place", location, "on the map with Yahoo."
+            raise
         #else:
         #    print >> sys.stderr, li, 'was useless'
 
