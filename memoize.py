@@ -1,15 +1,23 @@
 from cPickle import dumps, PicklingError # for memoize
 import cPickle as pickle
 import os
+import tempfile
 
 # Slightly evil, but there you go:
 # module-level cache.
 CACHE_FILENAME = './memoize-cache'
 
 def save_cache(obj):
-    fd = open(CACHE_FILENAME, 'wb')
-    pickle.dump(obj, fd)
+    # must make in cache_filename's dir to ensure rename() will work
+    cache_filename_dir = os.path.dirname(os.path.abspath(CACHE_FILENAME))
+    # Yes, some crazy mounts between the directory discovery above and the
+    # tempfile creation below could theoretically cause rename() to fail.
+
+    fileno, filename = tempfile.mkstemp(dir=cache_filename_dir, prefix='python_memoize')
+    fd = os.fdopen(fileno, 'wb')
+    pickle.dump(obj, fd, protocol=-1) # newest protocol
     fd.close()
+    os.rename(filename, CACHE_FILENAME)
 
 def read_from_cache():
     return pickle.load(open(CACHE_FILENAME))
@@ -43,11 +51,13 @@ class memoize(object):
             if key in _cache:
                 return _cache[key]
             _cache[key] = result = self.func(*args, **kwds)
-            save_cache(_cache)
+            if len(_cache) % 500 == 0:
+                _cache.update(read_from_cache())
+                save_cache(_cache)
             return result
         except TypeError:
             try:
-                dump = dumps(key)
+                dump = dumps(key, protocol=-1) # newest protocol
             except PicklingError:
                 return self.func(*args, **kwds)
             else:
