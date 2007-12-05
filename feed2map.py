@@ -34,9 +34,13 @@ def location2latlong(s):
     try:
         return location2latlong_real(s)
     except:
-        # uh, who knows?  Throw away the state.
-        city, state, country = s.split(',')
-        return location2latlong_real(','.join([city, country]))
+        city, state, country = s.rsplit(',', 2)
+        try:
+            # uh, who knows?  Throw away the state.
+            return location2latlong_real(','.join([city, country]))
+        except:
+            # uh, try just the country
+            return location2latlong_real(country)
 
 def location2latlong_real(s):
     args = {'appid': 'cc-location-feed', 'location': s}
