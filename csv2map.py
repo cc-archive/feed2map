@@ -24,12 +24,6 @@ def curl_get(url):
     return c_a.contents
         
 
-def scale_image(dimensions, number):
-    # What scaling strategy to use?
-    # For now, just multiply by number * 0.5 since the numbers are so small.
-    # This way, 1 -> 1/2 size, 2 -> full size, 3 -> 1.5 size, etc.
-    return [int(dim * number * 0.5) for dim in dimensions]
-
 @memoize.memoize
 def location2latlong(s):
     try:
