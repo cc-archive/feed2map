@@ -41,7 +41,9 @@ class memoize(object):
     #   but the keys of such dict can't be int
     def __init__(self, func):
         self.func = func
+        self.count = 0
     def __call__(self, *args, **kwds):
+        self.count += 1
         key = args
         if kwds:
             items = kwds.items()
@@ -51,9 +53,9 @@ class memoize(object):
             if key in _cache:
                 return _cache[key]
             _cache[key] = result = self.func(*args, **kwds)
-            if len(_cache) % 500 == 0:
-                _cache.update(read_from_cache())
-                save_cache(_cache)
+            #if self.count % 3000 == 0:
+                #_cache.update(read_from_cache())
+                #save_cache(_cache)
             return result
         except TypeError:
             try:
