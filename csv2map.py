@@ -73,7 +73,7 @@ def enrich_dicts_with_latlong(list_o_dicts, human_readable_location_field='locat
     for bag_o_data in list_o_dicts:
         my_data = bag_o_data.copy()
         if human_readable_location_field in bag_o_data:
-            my_data['location'] = location2latlong(my_data[human_readable_location_field])
+            my_data['_coordinates'] = location2latlong(my_data[human_readable_location_field])
         ret.append(my_data) 
     return ret
 
