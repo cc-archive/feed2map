@@ -74,6 +74,15 @@ def csv2dicts(csv_fd):
         ret.append(my_data)
     return ret
 
+def enrich_dicts_with_latlong(list_o_dicts, human_readable_location_field='location'):
+    ret = []
+    for bag_o_data in list_o_dicts:
+        my_data = bag_o_data.copy()
+        if human_readable_location_field in bag_o_data:
+            my_data['location'] = location2latlong(my_data[human_readable_location_field])
+        ret.append(my_data) 
+    return ret
+
 def dicts2latlong(d):
     ret = []
     for row in d:
@@ -128,12 +137,16 @@ def main():
     ''' No output if everything works.  That way,
     it's cron-job safe.'''
     try:
-        feed_contents = open('input').read()
+        csv_fd = open('input')
     except:
         print >> sys.stderr, "You must store the feed to use in the file called input."
         print >> sys.stderr, "You might want to set up a cron job to update that file every few whatevers."
         sys.exit(1)
 
+    data = csv2dicts(csv_fd)
+    with_lat_long = enrich_dicts_with_latlong(data)
+    data2table(data)
+    
     print format_table(latlong2table(dicts2latlong(feed2dicts(feed_contents))))
 
 if __name__ == '__main__':
