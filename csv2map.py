@@ -89,11 +89,6 @@ def dicts2latlong(d):
 
     return ret
 
-# Don't need this for now; using full precision.
-def truncate_float(precision, float):
-    scale = int(1/precision)
-    return int(float * scale) * 1.0 / scale
-
 def latlong2table(lats_and_longs):
     out = []
     latlong_bag = bag.bag(lats_and_longs)
