@@ -1,3 +1,4 @@
+import csv
 import urllib
 import pycurl
 import StringIO
@@ -54,13 +55,23 @@ def location2latlong_real(s):
     long = float(soup('longitude')[0].string)
     return (lat, long)
 
-def feed2dicts(feed_contents):
-    soup = BeautifulSoup.BeautifulSoup(feed_contents)
+def csv2dicts(csv_fd):
+    cols = ['name', None, 'date', 'location', 'attending', 'url']
+    csv_obj = csv.reader(csv_fd)
     ret = []
-
-    for li in soup('li'):
-        date_time, amount, location = li.string.split(',', 2)
-        ret.append(dict(date_time=date_time, amount=amount, location=location))
+    for row in csv_obj:
+        my_data = {}
+        for (i, value) in enumerate(row):
+            # if i >= len(cols), we ditch
+            if i >= len(cols):
+                continue
+            label = cols[i]
+            if label:
+                # special date hack
+                if label == 'date':
+                    value = value.split('T')[0] # is there a better way to parse W3C xsd:date values?
+                my_data[label] = value
+        ret.append(my_data)
     return ret
 
 def dicts2latlong(d):
