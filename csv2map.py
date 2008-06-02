@@ -1,3 +1,4 @@
+import string
 import csv
 import urllib
 import pycurl
@@ -73,7 +74,7 @@ def enrich_dicts_with_latlong(list_o_dicts, human_readable_location_field='locat
     for bag_o_data in list_o_dicts:
         my_data = bag_o_data.copy()
         if human_readable_location_field in bag_o_data:
-            my_data['_coordinates'] = location2latlong(my_data[human_readable_location_field])
+            my_data['_coordinates'] = ','.join(map(str, location2latlong(my_data[human_readable_location_field])))
         ret.append(my_data) 
     return ret
 
@@ -92,39 +93,21 @@ def dicts2latlong(d):
 
     return ret
 
-def latlong2table(lats_and_longs):
-    out = []
-    latlong_bag = bag.bag(lats_and_longs)
-    max_icon_height = 50
-    
-    for (lat, long), count in latlong_bag.mostcommon():
-        count += 1 # lol
-        my_icon_height = int(  min( (10 * count), 50)      )
-        my_icon_width  = int( (140.0 / 50) * my_icon_height )
-        this_row = dict(lat='%f' % lat,
-                        lon='%f' % long,
-                        icon = 'http://tilecache.creativecommons.org/pins/pin_green_h=%d.png' % my_icon_height,
-                        iconSize='%d,%d' % (my_icon_width, my_icon_height))
-        out.append(this_row)
-    return out
+def icon(data):
+    _icon = {'Yes': 'http://labs.creativecommons.org/~paulproteus/pin_green_h=50.png',
+            'No':  'http://labs.creativecommons.org/~paulproteus/pin_green_h=20.png'}
+    return _icon[
+        data['attending']]
 
-def format_table(table):
-    if not table:
-        return '' # if the table is empty, nothing to do
-    # inspect for keys
-
-    first = table[0]
-    our_keys = first.keys()
-
-    # Store header row
-    first_line = '\t'.join(our_keys)
-    out_lines = [first_line]
-
-    # Store data rows
-    for row in table:
-        out_lines.append('\t'.join([row[key] for key in our_keys]))
-
-    return '\n'.join(out_lines)
+def enriched_data2table(enriched):
+    # Look ma, I'm unsafe in every which way!
+    header = '\t'.join(['point', 'title', 'icon', 'description'])
+    TEMPLATE_STRING = '\t'.join(['$_coordinates', '$name', '$icon'])
+    TEMPLATE_STRING += '\t' + '''<p>$location</p> <p>$date</p> <p><a href="http://creativecommons.org/">Useless link</a></p>'''
+    TEMPLATE = string.Template(TEMPLATE_STRING)
+    for row in enriched:
+        row['icon'] = icon(row)
+        print TEMPLATE.substitute(row)
 
 
 def main():
@@ -138,10 +121,8 @@ def main():
         sys.exit(1)
 
     data = csv2dicts(csv_fd)
-    with_lat_long = enrich_dicts_with_latlong(data)
-    data2table(data)
-    
-    print format_table(latlong2table(dicts2latlong(feed2dicts(feed_contents))))
+    enriched = enrich_dicts_with_latlong(data)
+    table = enriched_data2table(enriched)
 
 if __name__ == '__main__':
     main()
