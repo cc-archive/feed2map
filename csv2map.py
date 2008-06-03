@@ -100,15 +100,18 @@ def icon(data):
         data['attending']]
 
 def enriched_data2table(enriched):
+    ret = ''
     # Look ma, I'm unsafe in every which way!
     header = '\t'.join(['point', 'title', 'icon', 'description'])
     TEMPLATE_STRING = '\t'.join(['$_coordinates', '$name', '$icon'])
-    TEMPLATE_STRING += '\t' + '''<p>$location</p> <p>$date</p> <p><a href="http://creativecommons.org/">Useless link</a></p>'''
+    TEMPLATE_STRING += '\t' + '''<p>$location</p> <p>$date</p> <p><a href="$url">more info</a></p>'''
     TEMPLATE = string.Template(TEMPLATE_STRING)
+    ret += header + '\n'
+
     for row in enriched:
         row['icon'] = icon(row)
-        print TEMPLATE.substitute(row)
-
+        ret += TEMPLATE.substitute(row) + '\n'
+    return ret
 
 def main():
     ''' No output if everything works.  That way,
@@ -123,6 +126,7 @@ def main():
     data = csv2dicts(csv_fd)
     enriched = enrich_dicts_with_latlong(data)
     table = enriched_data2table(enriched)
+    print table
 
 if __name__ == '__main__':
     main()
