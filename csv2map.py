@@ -102,8 +102,8 @@ def icon(data):
 def enriched_data2table(enriched):
     ret = ''
     # Look ma, I'm unsafe in every which way!
-    header = '\t'.join(['point', 'title', 'icon', 'description'])
-    TEMPLATE_STRING = '\t'.join(['$_coordinates', '$name', '$icon'])
+    header = '\t'.join(['point', 'title', 'icon', 'iconSize', 'iconOffset', 'description'])
+    TEMPLATE_STRING = '\t'.join(['$_coordinates', '$name', '$icon', '56,20', '-28,-10'])
     TEMPLATE_STRING += '\t' + '''<p>$location</p> <p>$date</p> <p><a href="$url">more info</a></p>'''
     TEMPLATE = string.Template(TEMPLATE_STRING)
     ret += header + '\n'
