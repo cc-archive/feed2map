@@ -1,3 +1,5 @@
+import string
+import csv
 import urllib
 import pycurl
 import StringIO
@@ -22,12 +24,6 @@ def curl_get(url):
 
     return c_a.contents
         
-
-def scale_image(dimensions, number):
-    # What scaling strategy to use?
-    # For now, just multiply by number * 0.5 since the numbers are so small.
-    # This way, 1 -> 1/2 size, 2 -> full size, 3 -> 1.5 size, etc.
-    return [int(dim * number * 0.5) for dim in dimensions]
 
 @memoize.memoize
 def location2latlong(s):
@@ -54,13 +50,32 @@ def location2latlong_real(s):
     long = float(soup('longitude')[0].string)
     return (lat, long)
 
-def feed2dicts(feed_contents):
-    soup = BeautifulSoup.BeautifulSoup(feed_contents)
+def csv2dicts(csv_fd):
+    cols = ['name', None, 'date', 'location', 'attending', 'url']
+    csv_obj = csv.reader(csv_fd)
     ret = []
+    for row in csv_obj:
+        my_data = {}
+        for (i, value) in enumerate(row):
+            # if i >= len(cols), we ditch
+            if i >= len(cols):
+                continue
+            label = cols[i]
+            if label:
+                # special date hack
+                if label == 'date':
+                    value = value.split('T')[0] # is there a better way to parse W3C xsd:date values?
+                my_data[label] = value
+        ret.append(my_data)
+    return ret
 
-    for li in soup('li'):
-        date_time, amount, location = li.string.split(',', 2)
-        ret.append(dict(date_time=date_time, amount=amount, location=location))
+def enrich_dicts_with_latlong(list_o_dicts, human_readable_location_field='location'):
+    ret = []
+    for bag_o_data in list_o_dicts:
+        my_data = bag_o_data.copy()
+        if human_readable_location_field in bag_o_data:
+            my_data['_coordinates'] = ','.join(map(str, location2latlong(my_data[human_readable_location_field])))
+        ret.append(my_data) 
     return ret
 
 def dicts2latlong(d):
@@ -78,57 +93,40 @@ def dicts2latlong(d):
 
     return ret
 
-# Don't need this for now; using full precision.
-def truncate_float(precision, float):
-    scale = int(1/precision)
-    return int(float * scale) * 1.0 / scale
+def icon(data):
+    _icon = {'Yes': 'http://labs.creativecommons.org/~paulproteus/pin_green_h=50.png',
+            'No':  'http://labs.creativecommons.org/~paulproteus/pin_green_h=20.png'}
+    return _icon[
+        data['attending']]
 
-def latlong2table(lats_and_longs):
-    out = []
-    latlong_bag = bag.bag(lats_and_longs)
-    max_icon_height = 50
-    
-    for (lat, long), count in latlong_bag.mostcommon():
-        count += 1 # lol
-        my_icon_height = int(  min( (10 * count), 50)      )
-        my_icon_width  = int( (140.0 / 50) * my_icon_height )
-        this_row = dict(lat='%f' % lat,
-                        lon='%f' % long,
-                        icon = 'http://tilecache.creativecommons.org/pins/pin_green_h=%d.png' % my_icon_height,
-                        iconSize='%d,%d' % (my_icon_width, my_icon_height))
-        out.append(this_row)
-    return out
+def enriched_data2table(enriched):
+    ret = ''
+    # Look ma, I'm unsafe in every which way!
+    header = '\t'.join(['point', 'title', 'icon', 'iconSize', 'iconOffset', 'description'])
+    TEMPLATE_STRING = '\t'.join(['$_coordinates', '$name', '$icon', '56,20', '-28,-10'])
+    TEMPLATE_STRING += '\t' + '''<p>$location</p> <p>$date</p> <p><a href="$url">more info</a></p>'''
+    TEMPLATE = string.Template(TEMPLATE_STRING)
+    ret += header + '\n'
 
-def format_table(table):
-    if not table:
-        return '' # if the table is empty, nothing to do
-    # inspect for keys
-
-    first = table[0]
-    our_keys = first.keys()
-
-    # Store header row
-    first_line = '\t'.join(our_keys)
-    out_lines = [first_line]
-
-    # Store data rows
-    for row in table:
-        out_lines.append('\t'.join([row[key] for key in our_keys]))
-
-    return '\n'.join(out_lines)
-
+    for row in enriched:
+        row['icon'] = icon(row)
+        ret += TEMPLATE.substitute(row) + '\n'
+    return ret
 
 def main():
     ''' No output if everything works.  That way,
     it's cron-job safe.'''
     try:
-        feed_contents = open('input').read()
+        csv_fd = open('input')
     except:
         print >> sys.stderr, "You must store the feed to use in the file called input."
         print >> sys.stderr, "You might want to set up a cron job to update that file every few whatevers."
         sys.exit(1)
 
-    print format_table(latlong2table(dicts2latlong(feed2dicts(feed_contents))))
+    data = csv2dicts(csv_fd)
+    enriched = enrich_dicts_with_latlong(data)
+    table = enriched_data2table(enriched)
+    print table
 
 if __name__ == '__main__':
     main()
