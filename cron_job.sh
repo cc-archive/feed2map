@@ -4,7 +4,7 @@ CSV_URL='http://wiki.creativecommons.org/Special:Ask/-5B-5Bdate::-3E2008-2D06-2D
 FINAL_TEXTFILE_PATH="../textfile.txt"
 
 ### Code:
-wget "$CSV_URL" -O- > input
+wget -q "$CSV_URL" -O- > input
 PREFINAL_TEXTFILE_PATH="$(mktemp $FINAL_TEXTFILE_PATH.XXXXX)"
 python csv2map.py >  "$PREFINAL_TEXTFILE_PATH"
 mv "$PREFINAL_TEXTFILE_PATH" "$FINAL_TEXTFILE_PATH"
