@@ -86,7 +86,7 @@ def dicts2latlong(d):
             if location.replace(',', '').replace(' ', ''):
                 ret.append(location2latlong(location))
         except:
-            print "That's weird, I can't place", location, "on the map with Yahoo."
+            print >> sys.stderr, "That's weird, I can't place", location, "on the map with Yahoo."
             raise
         #else:
         #    print >> sys.stderr, li, 'was useless'
@@ -94,8 +94,8 @@ def dicts2latlong(d):
     return ret
 
 def icon(data):
-    _icon = {'Yes': 'http://labs.creativecommons.org/~paulproteus/pin_green_h=50.png',
-            'No':  'http://labs.creativecommons.org/~paulproteus/pin_green_h=20.png'}
+    _icon = {'Yes': 'http://labs.creativecommons.org/~paulproteus/pin_green_h=20.png',
+            'No':  'http://labs.creativecommons.org/~paulproteus/pins/pin_purple_h=20.png'}
     return _icon[
         data['attending']]
 
@@ -104,7 +104,7 @@ def enriched_data2table(enriched):
     # Look ma, I'm unsafe in every which way!
     header = '\t'.join(['point', 'title', 'icon', 'iconSize', 'iconOffset', 'description'])
     TEMPLATE_STRING = '\t'.join(['$_coordinates', '$name', '$icon', '56,20', '-28,-10'])
-    TEMPLATE_STRING += '\t' + '''<p>$location</p> <p>$date</p> <p><a href="$url">more info</a></p>'''
+    TEMPLATE_STRING += '\t' + '''<p>$location</p> <p>$date</p> <p><a target="_top" href="$url">more info</a></p>'''
     TEMPLATE = string.Template(TEMPLATE_STRING)
     ret += header + '\n'
 
