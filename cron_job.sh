@@ -1,7 +1,7 @@
 #!/bin/sh -e
 ### Config:
 BASE_PATH="/home/paulproteus/events-map/cclearn-events-map/"
-CSV_URL='http://wiki.creativecommons.org/Special:Ask/-5B-5Bdate::-3E2008-2D06-2D10-5D-5D-20-0A-20-20-5B-5BCategory::Event-5D-5D/%3FEventType/%3FDate/%3FLocation/%3FAttendance/%3FMainurl/%3FDivision/sort%3DDate/order%3DASC/format%3Dcsv/limit%3D1000'
+CSV_URL='http://wiki.creativecommons.org/Special:Ask/-5B-5Bdate::-3E2008-2D07-2D3-5D-5D-20-0A-20-20-5B-5BCategory::Event-5D-5D/%3FEventType/%3FDate/%3FLocation/%3FAttendance/%3FMainurl/%3FEventCategory/sort%3DDate/order%3DASC/format%3Dcsv/limit%3D1000'
 FINAL_TEXTFILE_PATH="/home/paulproteus/events-map/textfile.txt"
 
 ### Code:
