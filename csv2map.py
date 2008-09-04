@@ -96,8 +96,10 @@ def dicts2latlong(d):
 def icon(data):
     _icon = {'Yes': 'http://labs.creativecommons.org/~paulproteus/pin_green_h=20.png',
             'No':  'http://labs.creativecommons.org/~paulproteus/pins/pin_purple_h=20.png'}
-    return _icon[
-        data['attending']]
+    value = data['attending']
+    if not value:
+        value = 'No'
+    return _icon[value]
 
 def enriched_data2table(enriched):
     ret = ''
